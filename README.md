@@ -1,23 +1,16 @@
 # Formularios Maipú — app Android
 
-App que muestra el portal https://formulariosmaipu.netlify.app.
+Portal de formularios de Easy Maipú empaquetado como app. El portal va **dentro** de la app
+(`app/src/main/assets/index.html`), así que funciona sin depender de Netlify.
 
-- Siempre carga la versión publicada en Netlify: si actualizas el portal allá, la app se actualiza sola (no hay que recompilar).
-- Sin internet muestra la copia incluida en `app/src/main/assets/index.html`.
 - Los formularios y enlaces externos se abren en el navegador del teléfono.
 - El PDF de Mi Local para PDA se abre con el visor de PDF del teléfono.
 
-## Cómo se obtiene el APK
+## Cómo actualizar el contenido
 
-Cada vez que se sube algo a `main`, GitHub compila solo y publica el APK en **Releases** (`formularios-maipu.apk`).
-Una copia queda también en la rama `apk-build`.
+1. Reemplazar `app/src/main/assets/index.html` por el HTML nuevo (por ejemplo, con la nueva versión del PDF de Mi Local).
+2. Subir el cambio a `main`. GitHub compila solo y publica el APK en **Releases** (`formularios-maipu.apk`).
+   Una copia queda también en la rama `apk-build`.
+3. Instalar el APK nuevo encima del anterior (no hay que desinstalar).
 
-**No borrar `app/firma.jks`**: es la firma fija. Gracias a ella las actualizaciones se instalan encima de la versión anterior sin desinstalar.
-
-## Si cambia la dirección del portal
-
-Editar `HOME` y `HOST` en `app/src/main/java/cl/easymaipu/formularios/MainActivity.kt`.
-
-## Si actualizas la copia sin conexión
-
-Reemplazar `app/src/main/assets/index.html` por el HTML nuevo y subir el cambio.
+**No borrar `app/firma.jks`**: es la firma fija. Gracias a ella las actualizaciones se instalan encima de la versión anterior.

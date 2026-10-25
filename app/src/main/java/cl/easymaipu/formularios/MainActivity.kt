@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
-import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -18,9 +17,9 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 /**
- * Envuelve el portal https://formulariosmaipu.netlify.app en una app.
- * - Siempre carga la versión publicada (si actualizas Netlify, la app se actualiza sola).
- * - Si no hay internet, muestra la copia incluida en assets/index.html.
+ * Portal de formularios Easy Maipú.
+ * - El portal va incluido en la app (assets/index.html): no depende de internet ni de Netlify.
+ * - Para cambiar el contenido se reemplaza assets/index.html y se compila un APK nuevo.
  * - Los formularios y enlaces externos se abren en el navegador del teléfono.
  * - El PDF de Mi Local para PDA se abre con el visor de PDF del teléfono.
  */
@@ -29,9 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
 
     companion object {
-        const val HOME = "https://formulariosmaipu.netlify.app/"
-        const val OFFLINE = "file:///android_asset/index.html"
-        const val HOST = "formulariosmaipu.netlify.app"
+        const val HOME = "file:///android_asset/index.html"
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -50,16 +47,11 @@ class MainActivity : AppCompatActivity() {
                 val url = uri.toString()
                 return when {
                     url.startsWith("data:application/pdf") -> { openPdf(url); true }
-                    uri.scheme == "file" || uri.host == HOST -> false
+                    uri.scheme == "file" -> false
                     else -> { openExternal(uri); true }
                 }
             }
 
-            override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
-                if (request.isForMainFrame && request.url.toString().startsWith(HOME)) {
-                    view.loadUrl(OFFLINE)
-                }
-            }
         }
 
         // Los enlaces con atributo "download" (el PDF embebido) llegan por aquí.
