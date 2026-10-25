@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Formularios" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:statusBarColor">#1c1f22</item>
+        <item name="android:navigationBarColor">#1c1f22</item>
+        <item name="android:windowBackground">#1c1f22</item>
+    </style>
+</resources>
