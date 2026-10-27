@@ -28,7 +28,7 @@
     min-height:100vh;
     display:flex;
     justify-content:center;
-    padding:28px 18px calc(56px + env(safe-area-inset-bottom));
+    padding:0 18px calc(56px + env(safe-area-inset-bottom));
   }
   .wrap{ width:100%; max-width:640px; }
 
@@ -85,7 +85,8 @@
   textarea{ resize:vertical; min-height:96px; line-height:1.45; }
   select{ color-scheme:dark; }
   input[type="date"], input[type="time"]{ color-scheme:dark; min-height:44px; }
-  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .row2{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+  .row2 .field, .row2 input{ min-width:0; max-width:100%; }
 
   .chips{ display:flex; flex-wrap:wrap; gap:8px; }
   .chip{
@@ -165,15 +166,34 @@
 
   footer{ margin-top:28px; font-size:12px; color:var(--ink-dim); line-height:1.6; }
   footer strong{ color:var(--ink); font-weight:600; }
+
+  /* Barra superior compacta (fija al hacer scroll) */
+  .appbar{
+    position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; gap:4px;
+    height:56px; margin:0 -18px 18px; padding:0 8px;
+    background:rgba(28,31,34,0.95);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--panel-border);
+  }
+  .appbar .back-btn{
+    width:44px; height:44px; flex-shrink:0; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink); text-decoration:none;
+  }
+  .appbar .back-btn:active{ background:rgba(255,255,255,0.08); }
+  .appbar h1{
+    font-size:18px; font-weight:600; letter-spacing:-0.01em; line-height:1.2; margin:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="index.html" onclick="if(history.length>1){history.back();return false;}">← Inicio</a>
-
-  <div class="eyebrow">Control Interno</div>
-  <h1>Reporte de incidente</h1>
-  <p class="sub">Complete los datos del caso. El reporte se genera en el formato estándar, listo para copiar o enviar por WhatsApp.</p>
+  <header class="appbar">
+    <a class="back-btn" href="index.html" aria-label="Volver al inicio" onclick="if(history.length>1){history.back();return false;}"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+    <h1>Reporte de incidente</h1>
+  </header>
 
   <div class="card">
     <h2>Datos del caso</h2>
