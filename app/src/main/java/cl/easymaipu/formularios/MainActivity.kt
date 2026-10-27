@@ -2,12 +2,16 @@ package cl.easymaipu.formularios
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import android.webkit.WebResourceRequest
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -38,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         web = WebView(this).apply { setBackgroundColor(Color.parseColor("#1c1f22")) }
         setContentView(web)
 
+        web.addJavascriptInterface(AppBridge(), "AndroidApp")
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
 
@@ -72,6 +77,17 @@ class MainActivity : AppCompatActivity() {
         })
 
         web.loadUrl(HOME)
+    }
+
+    /** Puente para que las pantallas locales copien texto al portapapeles de Android. */
+    inner class AppBridge {
+        @JavascriptInterface
+        fun copy(text: String) {
+            runOnUiThread {
+                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                cm.setPrimaryClip(ClipData.newPlainText("Reporte", text))
+            }
+        }
     }
 
     private fun openExternal(uri: Uri) {

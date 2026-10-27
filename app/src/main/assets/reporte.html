@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de incidente</title>
+<style>
+  :root{
+    --bg: #1c1f22;
+    --panel: #24282c;
+    --panel-border: #34393e;
+    --field: #1c1f22;
+    --ink: #eef1f2;
+    --ink-dim: #9aa3a9;
+    --accent: #e8710a;
+    --accent-soft: rgba(232,113,10,0.12);
+    --ok: #4fae64;
+    --danger: #d9534f;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(232,113,10,0.10), transparent 45%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 18px calc(56px + env(safe-area-inset-bottom));
+  }
+  .wrap{ width:100%; max-width:640px; }
+
+  .back{
+    display:inline-flex; align-items:center; gap:8px;
+    color:var(--ink-dim); text-decoration:none; font-size:14px;
+    padding:8px 0; margin-bottom:18px;
+  }
+  .back:active{ color:var(--accent); }
+
+  .eyebrow{
+    font-family:'JetBrains Mono','Courier New',monospace;
+    font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--accent); display:flex; align-items:center; gap:10px; margin-bottom:12px;
+  }
+  .eyebrow::before{
+    content:""; width:8px; height:8px; background:var(--ok); border-radius:50%;
+    box-shadow:0 0 0 3px rgba(79,174,100,0.18);
+  }
+  h1{
+    font-size:clamp(26px,6vw,34px); font-weight:700;
+    letter-spacing:-0.02em; line-height:1.15; margin-bottom:10px;
+  }
+  .sub{
+    color:var(--ink-dim); font-size:15px; line-height:1.55;
+    max-width:48ch; margin-bottom:28px;
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:20px 18px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.12em;
+    color:var(--accent); margin-bottom:16px; padding-bottom:10px;
+    border-bottom:1px solid var(--panel-border);
+  }
+  .field{ margin-bottom:16px; }
+  .field:last-child{ margin-bottom:0; }
+  label{
+    display:block; font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--ink-dim); margin-bottom:6px;
+  }
+  input, select, textarea{
+    width:100%; background:var(--field); border:1px solid var(--panel-border);
+    color:var(--ink); border-radius:8px; padding:11px 12px;
+    font-size:15px; font-family:inherit;
+    transition:border-color .15s ease;
+  }
+  input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--accent); }
+  textarea{ resize:vertical; min-height:96px; line-height:1.45; }
+  select{ color-scheme:dark; }
+  input[type="date"], input[type="time"]{ color-scheme:dark; min-height:44px; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    display:flex; align-items:center; gap:8px; margin:0;
+    background:var(--field); border:1px solid var(--panel-border);
+    border-radius:999px; padding:9px 14px;
+    font-size:13px; font-weight:500; letter-spacing:0.02em; text-transform:none;
+    color:var(--ink); cursor:pointer; user-select:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .chip input{ width:16px; height:16px; margin:0; padding:0; accent-color:var(--accent); }
+  .chip.active{ border-color:var(--accent); background:var(--accent-soft); }
+
+  #carabineros{ margin-bottom:8px; }
+  #carabinerosOtro{ display:none; }
+
+  .items{ border:1px solid var(--panel-border); border-radius:10px; overflow:hidden; margin-bottom:10px; }
+  .item-row{
+    display:grid; grid-template-columns:1fr 44px; gap:8px; align-items:center;
+    padding:8px; border-bottom:1px solid var(--panel-border);
+  }
+  .item-row:last-child{ border-bottom:none; }
+  .money-wrap{ position:relative; }
+  .money-wrap span{
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    color:var(--ink-dim); font-size:15px; pointer-events:none;
+  }
+  .money-wrap input{ padding-left:26px; }
+  .rmBtn{
+    background:transparent; border:1px solid var(--panel-border); color:var(--ink-dim);
+    border-radius:8px; width:44px; height:44px; font-size:15px; cursor:pointer;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .rmBtn:active{ color:var(--danger); border-color:var(--danger); }
+  .addItemBtn{
+    background:transparent; border:1px dashed var(--panel-border); color:var(--accent);
+    padding:12px; width:100%; border-radius:8px; font-size:14px; font-weight:600;
+    cursor:pointer; margin-bottom:12px; font-family:inherit;
+  }
+  .addItemBtn:disabled{ opacity:.4; }
+  .total-row{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    background:var(--field); border:1px solid var(--panel-border); border-radius:8px;
+    padding:13px 14px; font-size:13px; letter-spacing:0.04em; color:var(--ink-dim);
+  }
+  .total-row b{ color:var(--ink); font-size:17px; font-weight:700; letter-spacing:0; text-align:right; }
+  .mono{ font-family:'JetBrains Mono','Consolas','Courier New',monospace; font-size:15px !important; }
+  .manual-toggle{
+    display:flex; align-items:center; gap:10px; margin:14px 0 0;
+    font-size:13px; text-transform:none; letter-spacing:0; font-weight:400; color:var(--ink-dim);
+    cursor:pointer;
+  }
+  .manual-toggle input{ width:18px; height:18px; margin:0; padding:0; accent-color:var(--accent); }
+  #manualField{ display:none; margin-top:12px; }
+
+  .preview{
+    background:var(--field); border:1px solid var(--panel-border); border-radius:10px;
+    padding:16px; font-family:'JetBrains Mono','Consolas','Courier New',monospace; font-size:13px;
+    white-space:pre-wrap; word-break:break-word; line-height:1.65; color:#d4dadd;
+    max-height:340px; overflow-y:auto;
+  }
+  .preview b{ color:var(--accent); font-weight:600; }
+
+  .btnbar{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+  button{ font-family:inherit; }
+  .btn{
+    border-radius:10px; padding:14px 18px; font-size:15px; font-weight:600;
+    cursor:pointer; border:1px solid transparent; width:100%;
+    transition:background .15s ease, transform .05s ease;
+  }
+  .btn:active{ transform:scale(0.985); }
+  #copyBtn{ background:var(--accent); color:#1c1f22; }
+  #copyBtn.copied{ background:var(--ok); }
+  #waBtn{ background:transparent; color:var(--ok); border-color:var(--ok); }
+  #resetBtn{ background:transparent; color:var(--ink-dim); border-color:var(--panel-border); }
+  .hint{ font-size:12px; color:var(--ink-dim); margin-top:14px; line-height:1.55; }
+
+  footer{ margin-top:28px; font-size:12px; color:var(--ink-dim); line-height:1.6; }
+  footer strong{ color:var(--ink); font-weight:600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html" onclick="if(history.length>1){history.back();return false;}">← Formularios</a>
+
+  <div class="eyebrow">Control Interno</div>
+  <h1>Reporte de incidente</h1>
+  <p class="sub">Complete los datos del caso. El reporte se genera en el formato estándar, listo para copiar o enviar por WhatsApp.</p>
+
+  <div class="card">
+    <h2>Datos del caso</h2>
+    <div class="field">
+      <label for="tienda">Tienda</label>
+      <select id="tienda">
+        <option value="E503 EASY MAIPU" selected>E503 EASY MAIPU</option>
+        <option value="E512 EASY LA REINA">E512 EASY LA REINA</option>
+        <option value="E510 EASY FLORIDA">E510 EASY FLORIDA</option>
+        <option value="E511 EASY COSTANERA CENTER">E511 EASY COSTANERA CENTER</option>
+        <option value="E659 EASY PUENTE ALTO">E659 EASY PUENTE ALTO</option>
+        <option value="E643 EASY OCHAGAVIA">E643 EASY OCHAGAVIA</option>
+        <option value="E514 EASY LA DEHESA">E514 EASY LA DEHESA</option>
+      </select>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="fecha">Fecha</label>
+        <input id="fecha" type="date">
+      </div>
+      <div class="field">
+        <label for="hora">Hora</label>
+        <input id="hora" type="time">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="caso">Caso</label>
+      <select id="caso">
+        <option value="DETENIDO POR HURTO" selected>DETENIDO POR HURTO</option>
+        <option value="HURTO FRUSTRADO">HURTO FRUSTRADO</option>
+        <option value="HURTO CONSUMADO">HURTO CONSUMADO</option>
+        <option value="EVENTOS CLIENTE">EVENTOS CLIENTE</option>
+        <option value="EVENTO PATIO">EVENTO PATIO</option>
+        <option value="EVENTO ESTACIONAMIENTO">EVENTO ESTACIONAMIENTO</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Detecta</label>
+      <div class="chips" id="detectaChips">
+        <label class="chip"><input type="checkbox" value="CCTV" checked> CCTV</label>
+        <label class="chip"><input type="checkbox" value="ECI"> ECI</label>
+        <label class="chip"><input type="checkbox" value="TIENDA"> TIENDA</label>
+        <label class="chip"><input type="checkbox" value="CLIENTE"> CLIENTE</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="resumen">Resumen</label>
+      <textarea id="resumen" placeholder="Describa la secuencia de hechos..."></textarea>
+    </div>
+
+    <div class="field">
+      <label for="carabineros">Carabineros</label>
+      <select id="carabineros">
+        <option value="Traslada detenido">Traslada detenido</option>
+        <option value="Acoge denuncia">Acoge denuncia</option>
+        <option value="Retirado el detenido">Retirado el detenido</option>
+        <option value="Se apersona y toma antecedentes">Se apersona y toma antecedentes</option>
+        <option value="Realizando llamada" selected>Realizando llamada</option>
+        <option value="Pendiente de llamar">Pendiente de llamar</option>
+        <option value="No concurre">No concurre</option>
+        <option value="otro">Otro (especificar)</option>
+      </select>
+      <input id="carabinerosOtro" type="text" placeholder="Especifique...">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Valorizado</h2>
+    <div id="itemsWrap" class="items"></div>
+    <button type="button" class="addItemBtn" id="addItemBtn">+ Agregar monto</button>
+    <div class="total-row">
+      <span>TOTAL VALORIZADO</span>
+      <b id="totalDisplay">$0</b>
+    </div>
+    <label class="manual-toggle" for="manualToggle">
+      <input type="checkbox" id="manualToggle">
+      Ingresar el monto total manualmente (no considera el detalle)
+    </label>
+    <div class="field" id="manualField">
+      <div class="money-wrap">
+        <span>$</span>
+        <input id="valorizadoManual" type="text" inputmode="numeric" placeholder="169.060">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Correlativo legal</h2>
+    <div class="field">
+      <label for="correlativoSelect">Correlativo delitos</label>
+      <select id="correlativoSelect">
+        <option value="1">1er</option>
+        <option value="2">2do</option>
+        <option value="3">3er</option>
+        <option value="4">4to</option>
+        <option value="5">5to</option>
+      </select>
+    </div>
+    <div class="total-row">
+      <span>Código generado</span>
+      <b id="correlativoDisplay" class="mono">-</b>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Vista previa</h2>
+    <div class="preview" id="preview"></div>
+    <div class="btnbar">
+      <button class="btn" id="copyBtn" type="button">Copiar reporte</button>
+      <button class="btn" id="waBtn" type="button">Enviar por WhatsApp</button>
+      <button class="btn" id="resetBtn" type="button">Limpiar formulario</button>
+    </div>
+    <div class="hint">Los encabezados del reporte son fijos; el formato de salida se mantiene automáticamente.</div>
+  </div>
+
+  <footer>
+    Uso interno — <strong>Gerencia Prevención de Pérdidas y Seguridad</strong>.
+  </footer>
+</div>
+
+<script>
+const els = {
+  tienda: document.getElementById('tienda'),
+  fecha: document.getElementById('fecha'),
+  hora: document.getElementById('hora'),
+  caso: document.getElementById('caso'),
+  resumen: document.getElementById('resumen'),
+  carabineros: document.getElementById('carabineros'),
+  carabinerosOtro: document.getElementById('carabinerosOtro'),
+  manualToggle: document.getElementById('manualToggle'),
+  manualField: document.getElementById('manualField'),
+  valorizadoManual: document.getElementById('valorizadoManual'),
+};
+const preview = document.getElementById('preview');
+const copyBtn = document.getElementById('copyBtn');
+const waBtn = document.getElementById('waBtn');
+const resetBtn = document.getElementById('resetBtn');
+const itemsWrap = document.getElementById('itemsWrap');
+const addItemBtn = document.getElementById('addItemBtn');
+const totalDisplay = document.getElementById('totalDisplay');
+const correlativoSelect = document.getElementById('correlativoSelect');
+const correlativoDisplay = document.getElementById('correlativoDisplay');
+
+function todayISO(){
+  // Fecha local del dispositivo (toISOString usaba UTC y adelantaba el día en la tarde/noche)
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function nowHM(){
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+els.fecha.value = todayISO();
+els.hora.value = nowHM();
+
+// La hora y la fecha se mantienen al día solas, hasta que alguien las edita a mano
+let horaManual = false, fechaManual = false;
+els.hora.addEventListener('input', ()=>{ horaManual = true; });
+els.fecha.addEventListener('input', ()=>{ fechaManual = true; });
+els.hora.addEventListener('change', ()=>{ horaManual = true; });
+els.fecha.addEventListener('change', ()=>{ fechaManual = true; });
+// Al tocar el campo se abre el selector (reloj / calendario); no se toca el valor mientras se usa
+[els.hora, els.fecha].forEach(el=>{
+  el.addEventListener('click', ()=>{ try{ el.showPicker && el.showPicker(); }catch(e){} });
+});
+function refreshClock(){
+  const active = document.activeElement;
+  if(active === els.hora || active === els.fecha) return; // no interrumpir el selector abierto
+  if(!horaManual) els.hora.value = nowHM();
+  if(!fechaManual) els.fecha.value = todayISO();
+  render();
+}
+setInterval(refreshClock, 15000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) refreshClock(); });
+
+function formatFecha(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}-${m}-${y}`;
+}
+function digitsOnly(v){ return (v||'').toString().replace(/[^\d]/g,''); }
+function formatMoney(raw){
+  const d = digitsOnly(raw);
+  if(!d) return '';
+  return Number(d).toLocaleString('es-CL');
+}
+
+// ---- Detecta ----
+document.querySelectorAll('#detectaChips .chip').forEach(chip=>{
+  const cb = chip.querySelector('input');
+  const sync = ()=> chip.classList.toggle('active', cb.checked);
+  cb.addEventListener('change', ()=>{ sync(); render(); });
+  sync();
+});
+function getDetecta(){
+  return Array.from(document.querySelectorAll('#detectaChips input:checked')).map(i=>i.value).join(', ');
+}
+
+// ---- Carabineros "otro" ----
+els.carabineros.addEventListener('change', ()=>{
+  els.carabinerosOtro.style.display = els.carabineros.value === 'otro' ? 'block' : 'none';
+  render();
+});
+els.carabinerosOtro.addEventListener('input', render);
+function getCarabineros(){
+  return els.carabineros.value === 'otro' ? (els.carabinerosOtro.value || '-') : els.carabineros.value;
+}
+
+// ---- Valorizado (detalle) ----
+function addItem(valor=''){
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.innerHTML = `
+    <div class="money-wrap"><span>$</span><input type="text" class="itemValue" inputmode="numeric" placeholder="Monto" value="${valor}"></div>
+    <button type="button" class="rmBtn" title="Quitar" aria-label="Quitar monto">✕</button>
+  `;
+  itemsWrap.appendChild(row);
+  row.querySelector('.itemValue').addEventListener('input', render);
+  row.querySelector('.rmBtn').addEventListener('click', ()=>{ row.remove(); render(); });
+}
+addItemBtn.addEventListener('click', ()=>addItem());
+addItem(); // parte con una fila
+
+els.manualToggle.addEventListener('change', ()=>{
+  els.manualField.style.display = els.manualToggle.checked ? 'block' : 'none';
+  document.querySelectorAll('#itemsWrap input, #itemsWrap button, #addItemBtn').forEach(el=> el.disabled = els.manualToggle.checked);
+  render();
+});
+els.valorizadoManual.addEventListener('input', render);
+
+function getValorizadoTotal(){
+  if(els.manualToggle.checked){
+    return digitsOnly(els.valorizadoManual.value);
+  }
+  let sum = 0;
+  document.querySelectorAll('.itemValue').forEach(inp=>{
+    sum += Number(digitsOnly(inp.value) || 0);
+  });
+  return sum ? String(sum) : '';
+}
+
+// ---- Correlativo legal ----
+function getCorrelativoLegal(){
+  const storeMatch = (els.tienda.value || '').match(/E\d+/i);
+  const storeCode = storeMatch ? storeMatch[0].toUpperCase() : '';
+  const iso = els.fecha.value;
+  const fechaCompacta = iso ? iso.replace(/-/g,'') : '';
+  const num = (correlativoSelect.value || '1').padStart(2,'0');
+  if(!storeCode || !fechaCompacta) return '';
+  const nombre = (els.tienda.value || '')
+    .replace(/^E\d+\s*/i, '')
+    .toLowerCase()
+    .replace(/(^|\s)(\S)/g, (m, sp, ch) => sp + ch.toUpperCase());
+  return `${nombre ? nombre + ' ' : ''}${storeCode}-${fechaCompacta}-${num}`;
+}
+correlativoSelect.addEventListener('change', render);
+
+// ---- Texto final ----
+function buildText(){
+  const total = getValorizadoTotal();
+  const correlativo = getCorrelativoLegal();
+  const lines = [
+    `TIENDA: ${els.tienda.value || '-'}`,
+    `FECHA: ${formatFecha(els.fecha.value) || '-'}`,
+    `HORA: ${els.hora.value || '-'}`,
+    `CASO: ${els.caso.value || '-'}`,
+    `DETECTA: ${getDetecta() || '-'}`,
+    `RESUMEN: ${els.resumen.value || '-'}`,
+    `CARABINEROS: ${getCarabineros() || '-'}`,
+    `VALORIZADO: ${total ? '$'+formatMoney(total) : '-'}`,
+    `CORRELATIVO LEGAL: ${correlativo || '-'}`,
+  ];
+  return lines.join('\n');
+}
+
+function render(){
+  const total = getValorizadoTotal();
+  totalDisplay.textContent = total ? '$'+formatMoney(total) : '$0';
+  correlativoDisplay.textContent = getCorrelativoLegal() || '-';
+  const text = buildText();
+  preview.innerHTML = text.split('\n').map(line=>{
+    const idx = line.indexOf(':');
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return idx>-1 ? `<b>${esc(line.slice(0,idx+1))}</b>${esc(line.slice(idx+1))}` : esc(line);
+  }).join('\n');
+}
+
+[els.tienda, els.fecha, els.hora, els.caso, els.resumen].forEach(el=>{
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
+
+// ---- Copiar ----
+async function copyText(text){
+  // Dentro de la app se usa el portapapeles nativo de Android (más confiable)
+  if(window.AndroidApp && typeof window.AndroidApp.copy === 'function'){
+    window.AndroidApp.copy(text);
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+copyBtn.addEventListener('click', async ()=>{
+  await copyText(buildText());
+  copyBtn.textContent = 'Reporte copiado';
+  copyBtn.classList.add('copied');
+  setTimeout(()=>{
+    copyBtn.textContent = 'Copiar reporte';
+    copyBtn.classList.remove('copied');
+  }, 1600);
+});
+
+waBtn.addEventListener('click', ()=>{
+  window.location.href = 'https://wa.me/?text=' + encodeURIComponent(buildText());
+});
+
+resetBtn.addEventListener('click', ()=>{
+  horaManual = false;
+  fechaManual = false;
+  els.tienda.value = 'E503 EASY MAIPU';
+  els.fecha.value = todayISO();
+  els.hora.value = nowHM();
+  els.caso.value = 'DETENIDO POR HURTO';
+  document.querySelectorAll('#detectaChips input').forEach((cb,i)=>{ cb.checked = i===0; cb.dispatchEvent(new Event('change')); });
+  els.resumen.value = '';
+  els.carabineros.value = 'Realizando llamada';
+  els.carabinerosOtro.value = '';
+  els.carabinerosOtro.style.display = 'none';
+  itemsWrap.innerHTML = '';
+  addItem();
+  els.manualToggle.checked = false;
+  els.manualField.style.display = 'none';
+  document.querySelectorAll('#itemsWrap input, #itemsWrap button, #addItemBtn').forEach(el=> el.disabled = false);
+  els.valorizadoManual.value = '';
+  correlativoSelect.value = '1';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
