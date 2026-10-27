@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import android.webkit.WebResourceRequest
@@ -79,8 +80,15 @@ class MainActivity : AppCompatActivity() {
         web.loadUrl(HOME)
     }
 
-    /** Puente para que las pantallas locales copien texto al portapapeles de Android. */
+    /** Puente para que las pantallas locales copien texto y lean la versión instalada. */
     inner class AppBridge {
+        @JavascriptInterface
+        fun version(): String {
+            val pi = packageManager.getPackageInfo(packageName, 0)
+            val code = if (Build.VERSION.SDK_INT >= 28) pi.longVersionCode else @Suppress("DEPRECATION") pi.versionCode.toLong()
+            return "${pi.versionName} ($code)"
+        }
+
         @JavascriptInterface
         fun copy(text: String) {
             runOnUiThread {
