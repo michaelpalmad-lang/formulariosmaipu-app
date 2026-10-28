@@ -519,7 +519,16 @@ copyBtn.addEventListener('click', async ()=>{
 });
 
 waBtn.addEventListener('click', ()=>{
-  window.location.href = 'https://wa.me/?text=' + encodeURIComponent(buildText());
+  const url = 'https://wa.me/?text=' + encodeURIComponent(buildText());
+  if(window.AndroidApp){
+    // Dentro de la app: Android abre WhatsApp directamente
+    window.location.href = url;
+  } else {
+    // En el navegador (por ejemplo iPhone): pestaña nueva, para no perder el formulario
+    const w = window.open(url, '_blank');
+    if(w){ try{ w.opener = null; }catch(e){} }
+    else { window.location.href = url; }
+  }
 });
 
 resetBtn.addEventListener('click', ()=>{
