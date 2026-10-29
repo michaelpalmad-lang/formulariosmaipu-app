@@ -84,6 +84,32 @@
     background:transparent; color:var(--ink); border:1px solid var(--panel-border);
     font-size:14px; font-weight:600; font-family:inherit;
   }
+
+  /* Descarga de la app (solo en navegador) */
+  .dl{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px; margin-top:4px;
+    text-decoration:none; color:var(--ink);
+    border:1px solid rgba(79,174,100,0.45); border-radius:14px;
+    background:rgba(79,174,100,0.08);
+  }
+  .dl:active{ background:rgba(79,174,100,0.16); }
+  .dl .dl-ico{
+    width:48px; height:48px; border-radius:12px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ok); background:rgba(79,174,100,0.14);
+  }
+  .dl .dl-txt{ flex:1; min-width:0; }
+  .dl .dl-txt strong{ display:block; font-size:16px; font-weight:600; margin-bottom:2px; }
+  .dl .dl-txt span{ font-size:12.5px; color:var(--ink-dim); }
+  .dl .dl-go{ color:var(--ok); font-size:18px; flex-shrink:0; }
+  .ios-tip{
+    margin-top:4px; padding:14px 16px; border-radius:14px;
+    border:1px solid var(--panel-border); color:var(--ink-dim);
+    font-size:13px; line-height:1.55;
+  }
+  .ios-tip strong{ color:var(--ink); font-weight:600; }
+  [hidden]{ display:none !important; }
 </style>
 </head>
 <body>
@@ -113,6 +139,18 @@
       <span class="go">→</span>
     </a>
 
+    <a class="dl" id="dlAndroid" href="https://github.com/michaelpalmad-lang/formulariosmaipu-app/releases/latest/download/formularios-maipu.apk" hidden>
+      <span class="dl-ico"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><path d="M12 6.5v7"/><path d="M9 10.5l3 3 3-3"/></svg></span>
+      <span class="dl-txt">
+        <strong>Descargar app Android</strong>
+        <span>Instala la app en tu celular (APK)</span>
+      </span>
+      <span class="dl-go">↓</span>
+    </a>
+    <div class="ios-tip" id="iosTip" hidden>
+      <strong>¿Usas iPhone?</strong> En Safari toca <strong>Compartir</strong> y luego <strong>Agregar a pantalla de inicio</strong> para tener el acceso como una app.
+    </div>
+
     <footer>
       Uso interno — <strong>Gerencia Prevención de Pérdidas y Seguridad</strong>. Requiere sesión corporativa autorizada.
     </footer>
@@ -130,6 +168,15 @@
     </div>
   </div>
 
+  <script>
+    // Botón de descarga: solo en navegador. En iPhone se muestra la indicación para agregar a inicio.
+    (function(){
+      if (window.AndroidApp) return; // dentro de la app ya está instalada
+      var ua = navigator.userAgent || '';
+      var ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      document.getElementById(ios ? 'iosTip' : 'dlAndroid').hidden = false;
+    })();
+  </script>
   <script>
     (function(){
       var REPO = 'michaelpalmad-lang/formulariosmaipu-app';
