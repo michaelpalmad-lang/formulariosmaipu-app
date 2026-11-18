@@ -236,9 +236,15 @@
             // La etiqueta de cada versión es v1.N, con N = número de compilación instalada
             var m = ver.match(/\((\d+)\)/), t = last && last.tag_name.match(/\.(\d+)$/);
             if(m && t){
-              note.textContent = Number(t[1]) > Number(m[1])
-                ? 'Hay una versión más reciente disponible.'
-                : 'Tienes la última versión.';
+              var newer = Number(t[1]) > Number(m[1]);
+              note.textContent = newer ? 'Hay una versión más reciente disponible.' : 'Tienes la última versión.';
+              if (newer && window.AndroidApp && AndroidApp.checkUpdate) {
+                var u = document.createElement('button');
+                u.className = 'info-close'; u.type = 'button'; u.textContent = 'Actualizar ahora';
+                u.style.borderColor = 'var(--accent)'; u.style.color = 'var(--accent)';
+                u.onclick = function(){ ov.classList.remove('open'); AndroidApp.checkUpdate(); };
+                note.appendChild(u);
+              }
             } else { note.textContent = ''; }
           })
           .catch(function(){

@@ -27,10 +27,12 @@ import java.io.File
  * - Para cambiar el contenido se reemplaza assets/index.html y se compila un APK nuevo.
  * - Los formularios y enlaces externos se abren en el navegador del teléfono.
  * - El PDF de Mi Local para PDA se abre con el visor de PDF del teléfono.
+ * - Al abrirse revisa si hay una versión nueva y la instala desde la misma app (ver Updater.kt).
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var web: WebView
+    private lateinit var updater: Updater
 
     companion object {
         const val HOME = "file:///android_asset/index.html"
@@ -42,6 +44,8 @@ class MainActivity : AppCompatActivity() {
 
         web = WebView(this).apply { setBackgroundColor(Color.parseColor("#1c1f22")) }
         setContentView(web)
+
+        updater = Updater(this)
 
         web.addJavascriptInterface(AppBridge(), "AndroidApp")
         web.settings.javaScriptEnabled = true
@@ -80,6 +84,11 @@ class MainActivity : AppCompatActivity() {
         web.loadUrl(HOME)
     }
 
+    override fun onResume() {
+        super.onResume()
+        updater.onResume()   // avisa si hay una versión nueva y retoma una instalación pendiente
+    }
+
     /** Puente para que las pantallas locales copien texto y lean la versión instalada. */
     inner class AppBridge {
         @JavascriptInterface
@@ -87,6 +96,11 @@ class MainActivity : AppCompatActivity() {
             val pi = packageManager.getPackageInfo(packageName, 0)
             val code = if (Build.VERSION.SDK_INT >= 28) pi.longVersionCode else @Suppress("DEPRECATION") pi.versionCode.toLong()
             return "${pi.versionName} ($code)"
+        }
+
+        @JavascriptInterface
+        fun checkUpdate() {
+            runOnUiThread { updater.checkNow() }
         }
 
         @JavascriptInterface
